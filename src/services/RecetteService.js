@@ -7,7 +7,7 @@ class RecetteService {
         return await this.recetteRepository.findAll()
     };
 
-    async getRecetteBydId(recetteId) {
+    async getRecetteById(recetteId) {
         return await this.recetteRepository.findById(recetteId);
     }
 
@@ -24,8 +24,16 @@ class RecetteService {
         return await this.recetteRepository.createOne(recetteData);
     };
 
-    async updateRecette(recettePayload) {
-        return await  this.recetteRepository.updateOne(recettePayload);
+    async updateRecette(recetteId, recettePayload) {
+        const recetteData = recettePayload.data || recettePayload;
+        const existingRecette = await this.getRecetteById(recetteId);
+        if (!existingRecette) {
+            throw new Error(`La recette avec l'ID ${recetteId} n'a pas été trouvée.`);
+        }
+
+
+            return await  this.recetteRepository.updateOne(recetteId, recetteData);
+
     }
 }
 

@@ -17,12 +17,10 @@ class RecetteRepository {
 
     async createOne(data) {
         const recette = new Recette(data);
-        recette.validate();
         const { titre, temps, difficulte, budget, description } = recette;
         const result = await this.db.run("INSERT INTO recettes (titre, temps, difficulte, budget, description ) VALUES (?, ?, ?, ?, ?)" ,
             [titre, temps, difficulte, budget, description]
         );
-
         const insertedId = result.lastID;
         return insertedId;
     }
@@ -32,20 +30,42 @@ class RecetteRepository {
         return await this.db.run(sql)
     }
 
-    async updateOne(data) {
-        const recetteId = data.id;
-        const recetteToUpdate = await this.findById(recetteId);
+    async updateOne(id, data) {
+        const recetteToUpdate = await this.findById(id);
         if (!recetteToUpdate) {
             throw new Error('Recette à mettre a jours non trouvé');
         }
-        const { titre, temps, difficulte, budget, description } = data;
+
+        const fieldsToUpdate = {};
+        const allowFields = ['titre', 'temps', 'difficulte', 'budget', 'description'];
+
+        for (const field of allowFields) {
+            if (data[field] !== undefined) {
+                fieldsToUpdate[field] = data[field];
+            }
+        }
+
+        if (Object.keys(fieldsToUpdate).length === 0) {
+            throw new Error('Aucun champ valide à mettre à jour');
+        }
+
+        const setExpression = Object.keys(fieldsToUpdate)
+            .map(field => `${field} = ?`)
+            .join(', ');
+
+        const values = [...Object.values(fieldsToUpdate), id];
+
+
         const result = await this.db.run(
-            "UPDATE recettes SET titre = ?, temps = ?, difficulte = ?, budget = ?, description = ? WHERE id = ?",
-            [titre, temps, difficulte, budget, description, recetteId]
+            `UPDATE recettes SET ${setExpression} WHERE id = ?`,
+            values
         );
 
-        return result;
+        if (result.changes === 0) {
+            throw new Error(`Aucune recette mise à jour avec l'ID ${id}`);
+        }
 
+        return await this.findById(id);
     }
 }
 

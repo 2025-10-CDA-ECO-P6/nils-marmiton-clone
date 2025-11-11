@@ -22,14 +22,14 @@ class RecetteController {
         this.router.post('/', this.createRecette.bind(this));
 
         // UPDATE /api/recettes/:id
-        this.router.put('/:id', this.updateRecette.bind(this));
+        this.router.patch('/:id', this.updateRecette.bind(this));
 
     }
 
 
     async getRecette(req, res) {
         try {
-            const recette = await this.recetteService.getRecetteBydId(req.params.id);
+            const recette = await this.recetteService.getRecetteById(req.params.id);
             res.json(recette);
         } catch (error) {
             console.error('Erreur', error);
@@ -73,7 +73,7 @@ class RecetteController {
 
     async updateRecette(req, res) {
         try {
-            const recette = await this.recetteService.updateRecette(req.body);
+            const recette = await this.recetteService.updateRecette(req.params.id , req.body);
             res.status(200).json(recette);
         } catch (error) {
             console.error(req.body);
