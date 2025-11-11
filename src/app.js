@@ -1,6 +1,6 @@
 import express from 'express';
 import {openDb} from './config/db.js'
-import RecetteRepository from "./repositories/recetteRepository.js";
+import RecetteRepository from "./repositories/RecetteRepository.js";
 import RecetteService from "./services/RecetteService.js";
 import recetteRoutes from "./routes/recetteRoutes.js";
 
