@@ -38,5 +38,17 @@ export async function initDatabase(dbConnection) {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `);
+
+    await dbConnection.run(`
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nom TEXT NOT NULL,
+            prenom TEXT NOT NULL,
+            email TEXT NOT NULL,
+            password TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
     console.log('Tables vérifiées/initialisées.');
 }
