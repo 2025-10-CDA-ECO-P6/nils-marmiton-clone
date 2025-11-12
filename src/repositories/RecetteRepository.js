@@ -11,8 +11,8 @@ class RecetteRepository {
     }
 
     async findById(id) {
-        const sql = `SELECT * FROM recettes WHERE ID=${id}`
-        return await  this.db.get(sql);
+        const sql = `SELECT * FROM recettes WHERE ID=?`
+        return await  this.db.get(sql, [id]);
     }
 
     async createOne(data) {
@@ -26,8 +26,8 @@ class RecetteRepository {
     }
 
     async deleteById(id) {
-        const sql = `DELETE FROM recettes WHERE id=${id}`;
-        return await this.db.run(sql)
+        const sql = `DELETE FROM recettes WHERE id=?`;
+        return await this.db.run(sql, [id])
     }
 
     async updateOne(id, data) {
