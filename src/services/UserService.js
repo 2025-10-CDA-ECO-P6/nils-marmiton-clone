@@ -4,15 +4,11 @@ class UserService {
     }
 
     async register(userData) {
-        const userPayload = userData.data || userData;
-        if (!userPayload.mail || !userPayload.nom || !userPayload.password || !userPayload.prenom) {
+        const userPayload = userData;
+        if (!userPayload.nom || !userPayload.prenom || !userPayload.email || !userPayload.password) {
             throw new Error('Email, nom d\'utilisateur, prénom  et mot de passe sont obligatoires');
         }
-
         const user = await this.userRepository.createUser(userPayload);
-
-
-
         return user.toJson();
     }
 
@@ -20,3 +16,5 @@ class UserService {
 
     }
 }
+
+export default UserService;

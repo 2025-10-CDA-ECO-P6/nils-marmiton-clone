@@ -11,33 +11,30 @@ class UserRepository {
     }
 
     async findById(userId) {
-        const sql = `SELECT * FROM users WHERE id=${userId}`;
-        return await this.db.run(sql);
+        const sql = `SELECT * FROM users WHERE id = ?`;
+        return await this.db.get(sql, [userId]);
     }
 
     async findByEmail(email) {
-        const sql = `SELECT * FROM users WHERE mail=${email}`;
-        return await this.db.run(sql);
+        const sql = `SELECT * FROM users WHERE email = ?`;
+        return await this.db.get(sql, [email]);
     }
 
 
     async createUser(data) {
         const user = new User(data);
-        const {nom, prenom, mail, password} = user;
-
-        const existingMail = await this.findByEmail(user.mail);
+        const existingMail = await this.findByEmail(user.email);
         if (existingMail) {
             throw new Error('Cet email est déja utilisé')
         }
 
         await user.hashPassword();
-
+        const {nom, prenom, email, password} = user;
         const sql = `
-            INSERT INTO users (nom, prenom, email, hashedPassword)
-            VALUES (?,?,?,?)
+            INSERT INTO users (nom, prenom, email, password)
+            VALUES (?, ?, ?, ?)
         `;
-
-        const result = await this.db.run(sql, [nom, prenom, mail, password]);
+        const result = await this.db.run(sql, [user.nom, user.prenom, user.email, user.password]);
 
         user.id = result.lastID;
         return user;
@@ -45,3 +42,4 @@ class UserRepository {
 
 
 }
+export default UserRepository;
