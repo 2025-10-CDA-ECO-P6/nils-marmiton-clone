@@ -12,14 +12,14 @@ class AuthController {
         this.router.post('/register', this.register.bind(this));
 
         // POST api/auth/login
-        this.router.post('/login', this.login.bind(this));
+        this.router.post('/', this.login.bind(this));
         // GET api/auth/me
         this.router.get('/me', this.whoAmI.bind(this));
     }
 
     async register(req, res) {
         try {
-            const user = await this.userService.register(req.body);
+            const user = await this.userService.doRegister(req.body);
             res.status(201).json(user.data);
         } catch (error) {
             console.error(req.body);
@@ -28,7 +28,19 @@ class AuthController {
         }
     }
 
-    login(req, res) {
+    async login(req, res) {
+        try {
+            const user = await this.userService.doLogin(req.body);
+            res.json(user);
+        } catch (error) {
+            console.error(req.body);
+            console.error('Erreur lors de la connexion', error);
+            if(error.message.includes('incorrect') || error.message.includes('obligatoire')) {
+                res.status(401).json({erreur: error.message});
+            } else {
+                res.status(500).json({erreur : 'Erreur serveur lors de la conenxtion'});
+            }
+        }
 
     }
 

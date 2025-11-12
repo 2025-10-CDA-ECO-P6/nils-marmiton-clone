@@ -3,6 +3,10 @@ import {openDb} from './config/db.js'
 import RecetteRepository from "./repositories/RecetteRepository.js";
 import RecetteService from "./services/RecetteService.js";
 import recetteRoutes from "./routes/recetteRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import UserRepository from "./repositories/UserRepository.js";
+import UserService from "./services/UserService.js";
+import 'dotenv/config';
 
 const app = express();
 app.use(express.json());
@@ -15,8 +19,11 @@ async function startServer() {
         dbConnection = await openDb();
         const recetteRepository = new RecetteRepository(dbConnection);
         const recetteService = new RecetteService(recetteRepository);
+        const userRepository = new UserRepository(dbConnection);
+        const userService = new UserService(userRepository);
 
         app.use('/api/recettes', recetteRoutes(recetteService));
+        app.use('/api/auth', authRoutes(userService));
 
         // Démarrage du serveur
         app.listen(port, () => {

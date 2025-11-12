@@ -5,7 +5,7 @@ class User {
         this.id = data.id;
         this.nom = data.nom;
         this.prenom = data.prenom;
-        this.mail = data.mail;
+        this.email = data.email;
         this.password = data.password;
     }
 
@@ -24,8 +24,8 @@ class User {
                 id : this.id,
                 nom: this.nom,
                 prenom: this.prenom,
-                mail: this.mail,
-                token : token
+                email: this.email,
+                token: token || null
             }
         }
 

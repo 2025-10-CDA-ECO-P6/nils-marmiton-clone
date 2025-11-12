@@ -17,7 +17,8 @@ class UserRepository {
 
     async findByEmail(email) {
         const sql = `SELECT * FROM users WHERE email = ?`;
-        return await this.db.get(sql, [email]);
+        const userData =  await this.db.get(sql, [email]);
+        return new User(userData);
     }
 
 
