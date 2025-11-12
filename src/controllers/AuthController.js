@@ -1,4 +1,5 @@
 import {Router} from "express";
+import authToken from "../middleware/auth.js";
 
 class AuthController {
     constructor(userService) {
@@ -14,7 +15,7 @@ class AuthController {
         // POST api/auth/login
         this.router.post('/', this.login.bind(this));
         // GET api/auth/me
-        this.router.get('/me', this.whoAmI.bind(this));
+        this.router.get('/me', authToken, this.whoAmI.bind(this));
     }
 
     async register(req, res) {
@@ -44,8 +45,15 @@ class AuthController {
 
     }
 
-    whoAmI(req, res) {
-
+    async whoAmI(req, res) {
+        try {
+            const user = await this.userService.getCurrentUser(req.user.id);
+            return res.status(200).json(user);
+        } catch (error) {
+            console.error(req.user.id);
+            console.error('Erreur', error);
+            res.status(500).json({error : "Erreur serveur"})
+        }
     }
 
 
