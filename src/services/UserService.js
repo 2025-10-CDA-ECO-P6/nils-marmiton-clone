@@ -47,13 +47,7 @@ class UserService {
         );
     }
 
-    verifyToken(token) {
-        try {
-            return jwt.verify(token, this.JWT_SECRET);
-        } catch (error) {
-            throw new Error('Token invalide ou expiré');
-        }
-    }
+
 }
 
 export default UserService;
