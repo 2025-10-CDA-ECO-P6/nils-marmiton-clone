@@ -12,7 +12,11 @@ class UserRepository {
 
     async findById(userId) {
         const sql = `SELECT * FROM users WHERE id = ?`;
-        return await this.db.get(sql, [userId]);
+        const userData =  await this.db.get(sql, [userId]);
+        if (!userData) {
+            return null;
+        }
+        return new User(userData);
     }
 
     async findByEmail(email) {
@@ -20,7 +24,6 @@ class UserRepository {
         const userData =  await this.db.get(sql, [email]);
         return new User(userData);
     }
-
 
     async createUser(data) {
         const user = new User(data);
