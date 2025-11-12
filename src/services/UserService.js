@@ -1,9 +1,9 @@
 import jwt from 'jsonwebtoken';
 class UserService {
-    constructor(userRepository) {
+    constructor(userRepository, jwtSecret, jwtExpiresIn) {
         this.userRepository = userRepository;
-        this.JWT_SECRET = process.env.JWT_SECRET;
-        this.JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN;
+        this.JWT_SECRET = jwtSecret;
+        this.JWT_EXPIRES_IN = jwtExpiresIn;
     }
 
     async doRegister(userData) {

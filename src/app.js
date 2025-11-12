@@ -17,13 +17,16 @@ let dbConnection;
 async function startServer() {
     try {
         dbConnection = await openDb();
+        const JWT_SECRET = process.env.JWT_SECRET;
+        const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN;
+
         const recetteRepository = new RecetteRepository(dbConnection);
         const recetteService = new RecetteService(recetteRepository);
         const userRepository = new UserRepository(dbConnection);
-        const userService = new UserService(userRepository);
+        const userService = new UserService(userRepository, JWT_SECRET, JWT_EXPIRES_IN);
 
         app.use('/api/recettes', recetteRoutes(recetteService));
-        app.use('/api/auth', authRoutes(userService));
+        app.use('/api/auth',  authRoutes(userService));
 
         // Démarrage du serveur
         app.listen(port, () => {
