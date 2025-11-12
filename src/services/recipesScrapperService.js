@@ -38,8 +38,25 @@ class RecipesScrapperService{
                      await page.waitForNavigation({waitUntil : 'domcontentloaded'});
 
                      const recetteData = await page.evaluate(()=> {
+                         const allSteps = [];
                          const titre = document.querySelector('.main-title h1')?.innerText;
                          const infos = document.querySelectorAll('.recipe-primary__item');
+                         const stepsContainer = document.querySelectorAll('.recipe-step-list__container');
+
+                         for (let j = 0; j < stepsContainer.length; j++) {
+
+                             let currentStep = stepsContainer[j];
+                              const stepNumber = currentStep.querySelector('.recipe-step-list__head span').innerText;
+                              const stepText = currentStep.querySelector('.recipe-step-list__container p').innerText;
+
+                              if (stepNumber && stepText) {
+                                  allSteps.push({
+                                      number : stepNumber.trim(),
+                                      text: stepText.trim()
+                                  })
+                              }
+                         }
+
                          let temps, difficulte, budget;
 
                          if(infos.length <3) {
@@ -47,7 +64,6 @@ class RecipesScrapperService{
                              return {
                                  titre: titre || 'Titre manquant',
                                  error: 'Données infos incomplètes',
-                                 temps: null, difficulte: null, budget: null
                              };
                          } else {
                              temps = infos[0].innerText.trim();
@@ -58,7 +74,8 @@ class RecipesScrapperService{
                                  titre: titre,
                                  temps : temps,
                                  difficulte : difficulte,
-                                 budget: budget
+                                 budget: budget,
+                                 description : allSteps
                              }
                          }
                      })
