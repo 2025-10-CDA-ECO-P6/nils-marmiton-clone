@@ -1,4 +1,5 @@
 import {Router} from "express";
+import authToken from "../middleware/auth.js";
 
 class RecetteController {
     constructor(recetteService) {
@@ -19,7 +20,7 @@ class RecetteController {
         this.router.delete('/:id', this.deleteRecette.bind(this))
 
         // POST /api/recettes
-        this.router.post('/', this.createRecette.bind(this));
+        this.router.post('/', authToken, this.createRecette.bind(this));
 
         // UPDATE /api/recettes/:id
         this.router.patch('/:id', this.updateRecette.bind(this));
