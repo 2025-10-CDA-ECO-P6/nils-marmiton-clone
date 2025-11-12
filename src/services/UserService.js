@@ -35,6 +35,19 @@ class UserService {
         return user.toJson(token);
     }
 
+    async getCurrentUser(userId) {
+        if(!userId) {
+            throw new Error('ID utilisateur manquant');
+        }
+
+        const user = await this.userRepository.findById(userId);
+        if(!user) {
+            throw new Error('Utilisateur non trouvé');
+        }
+
+        return user.toJson();
+    }
+
     generateToken(user) {
         return jwt.sign(
             {
