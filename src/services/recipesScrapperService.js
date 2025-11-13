@@ -2,8 +2,9 @@ import puppeteer from "puppeteer";
 import * as url from "node:url";
 
 class RecipesScrapperService{
-    constructor(recetteRepository) {
+    constructor(recetteRepository, ingredientRepository) {
         this.recetteRepository = recetteRepository;
+        this.ingredientRepository = ingredientRepository;
     }
 
     async scrape() {
@@ -35,7 +36,7 @@ class RecipesScrapperService{
         return results;
     }
 
-    async collectAllRecipesUrls(browser, startPage = 1, endPage = 2) {
+    async collectAllRecipesUrls(browser, startPage = 1, endPage = 6) {
         const allUrls = [];
         const BATCH_LIMIT = 3;
         for (let i = 0; i<= endPage; i += BATCH_LIMIT) {
@@ -87,11 +88,13 @@ class RecipesScrapperService{
                     const ingredientList = document.querySelectorAll('.card-ingredient-title')
                     return Array.from(ingredientList).map(item => {
                         const quantity = item.querySelector('.count').innerText;
+                        const unit = item.querySelector('.unit').innerText;
                         const text = item.querySelector('.ingredient-name').innerText;
 
                         return {
                             text: text.trim(),
-                            quantity: quantity.trim()
+                            quantity: quantity.trim() + ' ' + unit
+
                         }
                     });
                 }
@@ -137,12 +140,15 @@ class RecipesScrapperService{
                         temps : temps,
                         difficulte : difficulte,
                         budget: budget,
-                        description : allSteps,
+                        description : JSON.stringify(allSteps),
                         ingredients : ingredients
                     }
                 }
 
             });
+            if (recetteData && !recetteData.error) {
+                await this.saveRecipe(recetteData);
+            }
             return recetteData;
         } catch (error) {
             console.error(`Erreur sur ${url}: ${error.message}`);
@@ -153,10 +159,36 @@ class RecipesScrapperService{
     }
 
 
+    async saveRecipe(recetteData) {
+        try {
+            const recetteCoreData = {
+                titre : recetteData.titre,
+                temps: recetteData.temps,
+                difficulte: recetteData.difficulte,
+                budget: recetteData.budget,
+                description : recetteData.description
+            };
 
+            const newRecetteId = await this.recetteRepository.saveOne(recetteCoreData);
+
+            if (!newRecetteId) {
+                throw new Error('Impossible de trouver ID de la nouvelle recete ');
+            }
+
+            for(const ingredient of recetteData.ingredients) {
+                const ingredientId = await this.ingredientRepository.getOrSave(ingredient.text);
+                await this.recetteRepository.linkIngredient(newRecetteId, ingredientId, ingredient.quantity);
+            }
+
+
+
+        } catch (error) {
+
+            console.error(`Erreur lors de la sauvegarde complète de la recette ${recetteData}:`, error);
+            throw error;
+        }
+    }
 }
 
-const scraper = new RecipesScrapperService({});
-scraper.scrape()
-    .then(data => console.log('\n--- RÉSULTAT FINAL DU SCRAPING (4 premières) ---', data))
-    .catch(err => console.error(err));
+export default RecipesScrapperService;
+

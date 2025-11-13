@@ -15,15 +15,20 @@ class RecetteRepository {
         return await  this.db.get(sql, [id]);
     }
 
-    async createOne(data) {
+    async saveOne(data) {
         const recette = new Recette(data);
         const { titre, temps, difficulte, budget, description } = recette;
         const result = await this.db.run("INSERT INTO recettes (titre, temps, difficulte, budget, description ) VALUES (?, ?, ?, ?, ?)" ,
             [titre, temps, difficulte, budget, description]
         );
-        const insertedId = result.lastID;
-        return insertedId;
+        return result.lastID;
     }
+
+    async linkIngredient(recetteId, ingredientId, quantity) {
+        await this.db.run(`
+            INSERT INTO Recettes_Ingredients (RecetteID, IngredientID, Quantite) VALUES (?, ?, ?)
+        `, [recetteId, ingredientId, quantity])
+    };
 
     async deleteById(id) {
         const sql = `DELETE FROM recettes WHERE id=?`;

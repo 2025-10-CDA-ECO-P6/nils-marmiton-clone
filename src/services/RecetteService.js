@@ -21,7 +21,7 @@ class RecetteService {
         if (!recetteData.titre || recetteData.temps === undefined || recetteData.difficulte === undefined || recetteData.budget === undefined) {
             throw new Error("Le titre, le temps, la difficulté et le budget sont obligatoires pour créer une recette.");
         }
-        return await this.recetteRepository.createOne(recetteData);
+        return await this.recetteRepository.saveOne(recetteData);
     };
 
     async updateRecette(recetteId, recettePayload) {
