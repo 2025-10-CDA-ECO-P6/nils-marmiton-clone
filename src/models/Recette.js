@@ -8,20 +8,6 @@ class Recette {
         this.description = data.description;
     }
 
-    validate() {
-        if (!this.titre || this.titre.trim() === " ") {
-            throw new Error('Le titre est obligatoire');
-        }
-
-        if (this.temps <= 0) {
-            throw new Error('Le temps doit etre superieur à 0');
-        }
-    }
-
-    isFast() {
-        return this.temps <= 30;
-    }
-
     toJson() {
         return {
             id: this.id,
