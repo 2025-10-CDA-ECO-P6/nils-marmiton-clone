@@ -1,7 +1,6 @@
 import puppeteer from "puppeteer";
-import * as url from "node:url";
 
-class RecipesScrapperService{
+class RecipesScrapperService {
     constructor(recetteRepository, ingredientRepository) {
         this.recetteRepository = recetteRepository;
         this.ingredientRepository = ingredientRepository;
@@ -39,9 +38,9 @@ class RecipesScrapperService{
     async collectAllRecipesUrls(browser, startPage = 1, endPage = 6) {
         const allUrls = [];
         const BATCH_LIMIT = 3;
-        for (let i = 0; i<= endPage; i += BATCH_LIMIT) {
+        for (let i = 0; i <= endPage; i += BATCH_LIMIT) {
             const pageIds = [];
-            for (let j = i; j< Math.min(i + BATCH_LIMIT, endPage + 1); j++) {
+            for (let j = i; j < Math.min(i + BATCH_LIMIT, endPage + 1); j++) {
                 pageIds.push(j);
             }
             const urlPromises = pageIds.map(pageId => this.collectUrlFromPage(browser, pageId));
@@ -56,7 +55,7 @@ class RecipesScrapperService{
         const page = await browser.newPage();
         try {
             await page.goto(`https://www.marmiton.org/recettes/index/categorie/plat-principal/${pageId}`, {waitUntil: 'domcontentloaded'});
-            const urlsOnPage = await  page.evaluate((selector) => {
+            const urlsOnPage = await page.evaluate((selector) => {
                 return Array.from(document.querySelectorAll(selector))
                     .map(a => a.href);
             }, '.card-vertical-detailed.card-vertical-detailed--auto a');
@@ -82,7 +81,7 @@ class RecipesScrapperService{
                 }
             });
             await page.goto(url, {waitUntil: "domcontentloaded"});
-            const recetteData = await page.evaluate(()=> {
+            const recetteData = await page.evaluate(() => {
 
                 const getIngredients = () => {
                     const ingredientList = document.querySelectorAll('.card-ingredient-title')
@@ -113,7 +112,7 @@ class RecipesScrapperService{
 
                     if (stepNumber && stepText) {
                         allSteps.push({
-                            number : stepNumber.trim(),
+                            number: stepNumber.trim(),
                             text: stepText.trim()
                         })
                     }
@@ -124,7 +123,7 @@ class RecipesScrapperService{
 
                 let temps, difficulte, budget;
 
-                if(infos.length <3) {
+                if (infos.length < 3) {
                     console.error('Erreur : manque des infos')
                     return {
                         titre: titre || 'Titre manquant',
@@ -137,11 +136,11 @@ class RecipesScrapperService{
 
                     return {
                         titre: titre,
-                        temps : temps,
-                        difficulte : difficulte,
+                        temps: temps,
+                        difficulte: difficulte,
                         budget: budget,
-                        description : JSON.stringify(allSteps),
-                        ingredients : ingredients
+                        description: JSON.stringify(allSteps),
+                        ingredients: ingredients
                     }
                 }
 
@@ -158,15 +157,14 @@ class RecipesScrapperService{
         }
     }
 
-
     async saveRecipe(recetteData) {
         try {
             const recetteCoreData = {
-                titre : recetteData.titre,
+                titre: recetteData.titre,
                 temps: recetteData.temps,
                 difficulte: recetteData.difficulte,
                 budget: recetteData.budget,
-                description : recetteData.description
+                description: recetteData.description
             };
 
             const newRecetteId = await this.recetteRepository.saveOne(recetteCoreData);
@@ -175,11 +173,10 @@ class RecipesScrapperService{
                 throw new Error('Impossible de trouver ID de la nouvelle recete ');
             }
 
-            for(const ingredient of recetteData.ingredients) {
+            for (const ingredient of recetteData.ingredients) {
                 const ingredientId = await this.ingredientRepository.getOrSave(ingredient.text);
                 await this.recetteRepository.linkIngredient(newRecetteId, ingredientId, ingredient.quantity);
             }
-
 
 
         } catch (error) {
