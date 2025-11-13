@@ -1,4 +1,6 @@
 import puppeteer from "puppeteer";
+import * as url from "node:url";
+
 class RecipesScrapperService{
     constructor(recetteRepository) {
         this.recetteRepository = recetteRepository;
@@ -9,94 +11,149 @@ class RecipesScrapperService{
         const scrapedResults = [];
         let pageId = 1;
         try {
-             browser = await puppeteer.launch({
-                 headless: true,
-                 args : ['--no-sandbox', '--disable-setuid-sandbox']
-             });
+            browser = await puppeteer.launch({
+                headless: true,
+                args: ['--no-sandbox', '--disable-setuid-sandbox']
+            });
+        } catch (error) {
+            console.error('Erreur', error.message);
+        }
 
-             for (pageId; pageId < 2; pageId++) {
-                 const page = await browser.newPage();
-                 await page.goto(`https://www.marmiton.org/recettes/index/categorie/plat-principal/${pageId}`, {waitUntil : 'domcontentloaded'});
+        const allUrls = await this.collectAllRecipesUrls(browser);
+        const CONCURRENCY_LIMIT = 5;
+        let results = [];
 
-                 try {
-                     await (await page.waitForSelector("#didomi-notice-agree-button", { timeout: 5000 })).click();
-                 } catch (error) {
-                     console.log("Bouton de refus des cookies non trouvé, continuant sans cliquer.");
-                 }
+        for (let i = 0; i < allUrls.length; i += CONCURRENCY_LIMIT) {
+            const batchUrls = allUrls.slice(i, i + CONCURRENCY_LIMIT);
 
-                 const selector = '.card-content.card-content--auto';
-                 await page.waitForSelector(selector);
+            const batchPromises = batchUrls.map(url => this.scrapeRecipe(browser, url));
+            const batchResults = await Promise.all(batchPromises);
 
+            results.push(...batchResults);
+        }
 
-                 let cardsLinks = await page.$$(selector + ' a');
-                 console.log(`Trouvé ${cardsLinks.length} liens de recettes à scraper.`);
+        return results;
+    }
 
-                 for (let i=0; i < cardsLinks.length; i++){
-                     console.log(`Scraping recette ${i + 1}/${cardsLinks.length}...`);
+    async collectAllRecipesUrls(browser, startPage = 1, endPage = 2) {
+        const allUrls = [];
+        const BATCH_LIMIT = 3;
+        for (let i = 0; i<= endPage; i += BATCH_LIMIT) {
+            const pageIds = [];
+            for (let j = i; j< Math.min(i + BATCH_LIMIT, endPage + 1); j++) {
+                pageIds.push(j);
+            }
+            const urlPromises = pageIds.map(pageId => this.collectUrlFromPage(browser, pageId));
+            const urlsArrays = await Promise.all(urlPromises);
 
-                     await cardsLinks[i].click();
-                     await page.waitForNavigation({waitUntil : 'domcontentloaded'});
+            urlsArrays.forEach(urls => allUrls.push(...urls));
+        }
+        return allUrls;
+    }
 
-                     const recetteData = await page.evaluate(()=> {
-                         const allSteps = [];
-                         const titre = document.querySelector('.main-title h1')?.innerText;
-                         const infos = document.querySelectorAll('.recipe-primary__item');
-                         const stepsContainer = document.querySelectorAll('.recipe-step-list__container');
-
-                         for (let j = 0; j < stepsContainer.length; j++) {
-
-                             let currentStep = stepsContainer[j];
-                              const stepNumber = currentStep.querySelector('.recipe-step-list__head span').innerText;
-                              const stepText = currentStep.querySelector('.recipe-step-list__container p').innerText;
-
-                              if (stepNumber && stepText) {
-                                  allSteps.push({
-                                      number : stepNumber.trim(),
-                                      text: stepText.trim()
-                                  })
-                              }
-                         }
-
-                         let temps, difficulte, budget;
-
-                         if(infos.length <3) {
-                             console.error('Erreur : manque des infos')
-                             return {
-                                 titre: titre || 'Titre manquant',
-                                 error: 'Données infos incomplètes',
-                             };
-                         } else {
-                             temps = infos[0].innerText.trim();
-                             difficulte = infos[1].innerText.trim();
-                             budget = infos[2].innerText.trim();
-
-                             return {
-                                 titre: titre,
-                                 temps : temps,
-                                 difficulte : difficulte,
-                                 budget: budget,
-                                 description : allSteps
-                             }
-                         }
-                     })
-
-                     console.log('Données récupérées:', recetteData);
-                     scrapedResults.push(recetteData);
-                     await page.goBack({waitUntil : "domcontentloaded"});
-                     await page.waitForSelector(selector);
-                     cardsLinks = await page.$$(selector + ' a');
-
-                 }
-             }
-
-
-            return scrapedResults;
-        }catch (error) {
-            console.error('Échec du Scraper:', error);
+    async collectUrlFromPage(browser, pageId) {
+        const page = await browser.newPage();
+        try {
+            await page.goto(`https://www.marmiton.org/recettes/index/categorie/plat-principal/${pageId}`, {waitUntil: 'domcontentloaded'});
+            const urlsOnPage = await  page.evaluate((selector) => {
+                return Array.from(document.querySelectorAll(selector))
+                    .map(a => a.href);
+            }, '.card-vertical-detailed.card-vertical-detailed--auto a');
+            return urlsOnPage;
+        } catch (error) {
+            console.error('Erreur', error.message);
+            return null;
         } finally {
-            if (browser) await browser.close();
+            await page.close();
         }
     }
+
+    async scrapeRecipe(browser, url) {
+        const page = await browser.newPage();
+        try {
+            await page.setRequestInterception(true);
+            page.on('request', (req) => {
+                const resourceType = req.resourceType();
+                if (['image', 'stylesheet', 'font', 'media'].includes(resourceType)) {
+                    req.abort();
+                } else {
+                    req.continue();
+                }
+            });
+            await page.goto(url, {waitUntil: "domcontentloaded"});
+            const recetteData = await page.evaluate(()=> {
+
+                const getIngredients = () => {
+                    const ingredientList = document.querySelectorAll('.card-ingredient-title')
+                    return Array.from(ingredientList).map(item => {
+                        const quantity = item.querySelector('.count').innerText;
+                        const text = item.querySelector('.ingredient-name').innerText;
+
+                        return {
+                            text: text.trim(),
+                            quantity: quantity.trim()
+                        }
+                    });
+                }
+
+
+                const allSteps = [];
+                const titre = document.querySelector('.main-title h1')?.innerText;
+                const infos = document.querySelectorAll('.recipe-primary__item');
+                const stepsContainer = document.querySelectorAll('.recipe-step-list__container');
+
+                for (let j = 0; j < stepsContainer.length; j++) {
+
+                    let currentStep = stepsContainer[j];
+                    const stepNumber = currentStep.querySelector('.recipe-step-list__head span').innerText;
+                    const stepText = currentStep.querySelector('.recipe-step-list__container p').innerText;
+
+                    if (stepNumber && stepText) {
+                        allSteps.push({
+                            number : stepNumber.trim(),
+                            text: stepText.trim()
+                        })
+                    }
+                }
+
+                const ingredients = getIngredients();
+
+
+                let temps, difficulte, budget;
+
+                if(infos.length <3) {
+                    console.error('Erreur : manque des infos')
+                    return {
+                        titre: titre || 'Titre manquant',
+                        error: 'Données infos incomplètes',
+                    };
+                } else {
+                    temps = infos[0].innerText.trim();
+                    difficulte = infos[1].innerText.trim();
+                    budget = infos[2].innerText.trim();
+
+                    return {
+                        titre: titre,
+                        temps : temps,
+                        difficulte : difficulte,
+                        budget: budget,
+                        description : allSteps,
+                        ingredients : ingredients
+                    }
+                }
+
+            });
+            return recetteData;
+        } catch (error) {
+            console.error(`Erreur sur ${url}: ${error.message}`);
+            return null;
+        } finally {
+            await page.close();
+        }
+    }
+
+
+
 }
 
 const scraper = new RecipesScrapperService({});
