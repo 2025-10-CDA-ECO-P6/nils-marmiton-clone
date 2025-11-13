@@ -9,6 +9,8 @@ import UserService from "./services/UserService.js";
 import 'dotenv/config';
 import RecipesScrapperService from "./services/recipesScrapperService.js";
 import IngredientRepository from "./repositories/IngredientRepository.js";
+import authToken from "./middleware/auth.js";
+import scrapeRoutes from "./routes/scrapeRoutes.js";
 
 
 const app = express();
@@ -32,6 +34,7 @@ async function startServer() {
 
         app.use('/api/recettes', recetteRoutes(recetteService));
         app.use('/api/auth',  authRoutes(userService));
+        app.use('/private', authToken, scrapeRoutes(recipesScrapperService));
 
         // Démarrage du serveur
         app.listen(port, () => {
