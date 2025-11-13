@@ -27,6 +27,8 @@ export async function openDb() {
 
 // Initialiser les tables
 export async function initDatabase(dbConnection) {
+    await dbConnection.run(`PRAGMA foreign_keys = ON`);
+
     await dbConnection.run(`
         CREATE TABLE IF NOT EXISTS recettes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,6 +51,35 @@ export async function initDatabase(dbConnection) {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `);
+
+    await dbConnection.run(`
+        CREATE TABLE IF NOT EXISTS ingredients (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nom TEXT NOT NULL UNIQUE
+        )
+    `);
+
+    await dbConnection.run(`
+        CREATE TABLE IF NOT EXISTS Recettes_Ingredients (
+            RecetteID INTEGER NOT NULL,
+            IngredientID INTEGER NOT NULL,
+            Quantite Text,
+            
+            -- definition clé primaire composite
+            PRIMARY KEY (RecetteID, IngredientID),
+            
+            -- clé etranger vers recettes
+            FOREIGN KEY (RecetteID)
+                REFERENCES recettes(id)
+                ON DELETE CASCADE,
+            
+            -- Clé Etragère vers ingrédients
+            FOREIGN KEY(IngredientID)
+                REFERENCES ingredients(id)
+                ON DELETE CASCADE
+        )
+    `);
+
 
     console.log('Tables vérifiées/initialisées.');
 }
