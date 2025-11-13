@@ -1,5 +1,3 @@
-import Recette from "../models/Recette.js";
-
 class RecetteRepository {
     constructor(dbConnection) {
         this.db = dbConnection;
@@ -16,8 +14,7 @@ class RecetteRepository {
     }
 
     async saveOne(data) {
-        const recette = new Recette(data);
-        const { titre, temps, difficulte, budget, description } = recette;
+        const { titre, temps, difficulte, budget, description } = data;
         const result = await this.db.run("INSERT INTO recettes (titre, temps, difficulte, budget, description ) VALUES (?, ?, ?, ?, ?)" ,
             [titre, temps, difficulte, budget, description]
         );

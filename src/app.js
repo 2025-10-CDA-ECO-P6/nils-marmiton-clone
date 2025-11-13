@@ -11,6 +11,8 @@ import RecipesScrapperService from "./services/recipesScrapperService.js";
 import IngredientRepository from "./repositories/IngredientRepository.js";
 import authToken from "./middleware/auth.js";
 import scrapeRoutes from "./routes/scrapeRoutes.js";
+import Recette from "./models/Recette.js";
+import User from "./models/User.js";
 
 
 const app = express();
@@ -28,8 +30,8 @@ async function startServer() {
         const recetteRepository = new RecetteRepository(dbConnection);
         const userRepository = new UserRepository(dbConnection);
         const ingredientRepository = new IngredientRepository(dbConnection);
-        const recetteService = new RecetteService(recetteRepository);
-        const userService = new UserService(userRepository, JWT_SECRET, JWT_EXPIRES_IN);
+        const recetteService = new RecetteService(recetteRepository, Recette);
+        const userService = new UserService(userRepository, JWT_SECRET, JWT_EXPIRES_IN, User);
         const recipesScrapperService = new RecipesScrapperService(recetteRepository, ingredientRepository);
 
         app.use('/api/recettes', recetteRoutes(recetteService));

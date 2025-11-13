@@ -1,5 +1,3 @@
-import Ingredient from "../models/Ingredient.js";
-
 class IngredientRepository {
     constructor(dbConnection) {
         this.db = dbConnection;

@@ -1,9 +1,10 @@
 import jwt from 'jsonwebtoken';
 class UserService {
-    constructor(userRepository, jwtSecret, jwtExpiresIn) {
+    constructor(userRepository, jwtSecret, jwtExpiresIn, User) {
         this.userRepository = userRepository;
         this.JWT_SECRET = jwtSecret;
         this.JWT_EXPIRES_IN = jwtExpiresIn;
+        this.User = User;
     }
 
     async doRegister(userData) {
@@ -11,8 +12,23 @@ class UserService {
         if (!userPayload.nom || !userPayload.prenom || !userPayload.email || !userPayload.password) {
             throw new Error('Email, nom d\'utilisateur, prénom  et mot de passe sont obligatoires');
         }
-        const user = await this.userRepository.createUser(userPayload);
-        return user.toJson();
+        const user = new this.User(userData);
+        const existingMail = await this.userRepository.findByEmail(user.email);
+        if(existingMail) {
+            throw new Error('Cet email est deja utilisé');
+        }
+
+        await user.hashPassword();
+
+        const data = {
+            nom : user.nom,
+            prenom : user.prenom,
+            email : user.email,
+            password : user.password
+        };
+
+        return await this.userRepository.createUser(data);
+
     }
 
     async doLogin(userPayload) {
@@ -21,10 +37,12 @@ class UserService {
             throw new Error('Email et mot de passe sont obligatoires');
         }
 
-        const user = await this.userRepository.findByEmail(email);
-        if (!user) {
+        const userData = await this.userRepository.findByEmail(email);
+        if (!userData) {
             throw new Error('Email ou mot de pass incorrect');
         }
+
+        const user = new this.User(userData);
 
         const isPassWordValid = await user.comparePassword(password);
         if (!isPassWordValid) {
@@ -40,10 +58,12 @@ class UserService {
             throw new Error('ID utilisateur manquant');
         }
 
-        const user = await this.userRepository.findById(userId);
+        const userData = await this.userRepository.findById(userId);
         if(!user) {
             throw new Error('Utilisateur non trouvé');
         }
+
+        const user = new this.User(userData)
 
         return user.toJson();
     }

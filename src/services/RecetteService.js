@@ -1,6 +1,8 @@
+
 class RecetteService {
-    constructor(recetteRepository) {
+    constructor(recetteRepository, Recette) {
         this.recetteRepository = recetteRepository;
+        this.Recette = Recette;
     }
 
     async getAllRecettes() {
@@ -21,7 +23,16 @@ class RecetteService {
         if (!recetteData.titre || recetteData.temps === undefined || recetteData.difficulte === undefined || recetteData.budget === undefined) {
             throw new Error("Le titre, le temps, la difficulté et le budget sont obligatoires pour créer une recette.");
         }
-        return await this.recetteRepository.saveOne(recetteData);
+
+        const recette = new this.Recette(recetteData)
+        const data = {
+            titre: recette.titre,
+            temps: recette.temps,
+            difficulte : recette.difficulte,
+            budget: recette.budget,
+            description: recette.description
+        }
+        return await this.recetteRepository.saveOne(data);
     };
 
     async updateRecette(recetteId, recettePayload) {
