@@ -7,6 +7,9 @@ import authRoutes from "./routes/authRoutes.js";
 import UserRepository from "./repositories/UserRepository.js";
 import UserService from "./services/UserService.js";
 import 'dotenv/config';
+import RecipesScrapperService from "./services/recipesScrapperService.js";
+import IngredientRepository from "./repositories/IngredientRepository.js";
+
 
 const app = express();
 app.use(express.json());
@@ -21,9 +24,11 @@ async function startServer() {
         const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN;
 
         const recetteRepository = new RecetteRepository(dbConnection);
-        const recetteService = new RecetteService(recetteRepository);
         const userRepository = new UserRepository(dbConnection);
+        const ingredientRepository = new IngredientRepository(dbConnection);
+        const recetteService = new RecetteService(recetteRepository);
         const userService = new UserService(userRepository, JWT_SECRET, JWT_EXPIRES_IN);
+        const recipesScrapperService = new RecipesScrapperService(recetteRepository, ingredientRepository);
 
         app.use('/api/recettes', recetteRoutes(recetteService));
         app.use('/api/auth',  authRoutes(userService));
