@@ -1,0 +1,119 @@
+@url = http://localhost:1337
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibWFpbCI6InRob21hcy5sYWZhcmNlQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoidGhvbWFzIiwiaWF0IjoxNzYzMTI0MjY0LCJleHAiOjE3NjM3MjkwNjR9.LsXA8-DohUfIN-oe6Q_2yAxLKHRtt5dN6Uiaoa5XVx8
+### Auth
+POST {{url}}/api/auth/local/register
+Content-Type: application/json
+
+{
+  "username": "thomas",
+  "mail": "thomas.lafarce@gmail.com",
+  "password": "8hfds/f!ndfs"
+}
+
+### Auth
+POST {{url}}/api/auth/local/register
+Content-Type: application/json
+
+{
+  "username": "foobar",
+  "email": "foo.bar@strapi.io",
+  "password": "Test1234"
+}
+
+### Login
+POST {{url}}/api/auth/local
+Content-Type: application/json
+
+{
+  "mail": "thomas.lafarce@gmail.com",
+  "password": "8hfds/f!ndfs"
+}
+
+### Get Me
+GET {{url}}/api/users/me
+Authorization: Bearer {{token}}
+
+### Get recipes
+GET {{url}}/api/recipes
+Authorization: Bearer {{token}}
+
+### Create recipe
+POST {{url}}/api/recipes
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "data": {
+    "title": "Pancakes au sirop d'érable",
+    "price": 1,
+    "time": 2,
+    "difficulty": 1
+  }
+}
+
+### Create recipe
+POST {{url}}/api/recipes
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "data": {
+    "title": "Salade de fruits",
+    "price": 1,
+    "time": 2,
+    "difficulty": 1
+  }
+}
+
+### Create recipe
+POST {{url}}/api/recipes
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "data": {
+    "title": "Bouillabaisse",
+    "price": 3,
+    "time": 3,
+    "difficulty": 2
+  }
+}
+
+### Create recipe
+POST {{url}}/api/recipes
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "data": {
+    "title": "Lapin au civet",
+    "price": 2,
+    "time": 3,
+    "difficulty": 1
+  }
+}
+
+### Update recipe
+PATCH {{url}}/api/recipes/7abc2e71-d141-42a5-9cc7-7d3258515291
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "data": {
+    "difficulty": "dur"
+  }
+}
+
+### Delete recipe
+DELETE {{url}}/api/recipes/7abc2e71-d141-42a5-9cc7-7d3258515291
+Authorization: Bearer {{token}}
+
+### Get recipes where price is 1
+GET {{url}}/api/recipes?filters[price][$eq]=1
+Authorization: Bearer {{token}}
+
+
+### scrape data
+GET {{url}}/private/scrape
+Content-Type: application/json
+Authorization: Bearer {{token}}
