@@ -43,8 +43,6 @@ class UserService {
         }
 
         const user = new this.User(userData);
-        console.log('Mot de passe fourni (clair) : ', password);
-        console.log('Mot de passe stocké (haché) : ', user.password);
 
         const isPassWordValid = await user.comparePassword(password, this.hasherService);
         if (!isPassWordValid) {
