@@ -31,7 +31,7 @@ class RecetteController {
     async getRecette(req, res) {
         try {
             const recette = await this.recetteService.getRecetteById(req.params.id);
-            res.json(recette);
+            res.status(200).json(recette);
         } catch (error) {
             console.error('Erreur', error);
             res.status(500).json({error : "Erreur Serveur"})
@@ -39,9 +39,11 @@ class RecetteController {
     }
 
     async getRecettes(req, res) {
+        const page = req.params.page;
+        const limit = req.params.limit;
         try {
-            const recettes = await this.recetteService.getAllRecettes();
-            res.json(recettes);
+            const recettes = await this.recetteService.getAllRecettes(page, limit);
+            res.status(200).json(recettes);
         } catch (error) {
             console.error('Erreur', error);
             res.status(500).json({error : "Erreur serveur"})
@@ -53,7 +55,9 @@ class RecetteController {
             const recetteToDelete = req.params.id;
             const isDeleted = await this.recetteService.deleteRecette(recetteToDelete);
             if(!isDeleted) {
-                return res.status(404).json({ message: 'Recette non trouvée ou déjà supprimée.' });            }
+                return res.status(404).json({ message: 'Recette non trouvée ou déjà supprimée.' });
+            }
+
             return res.status(204).end();
         } catch (error) {
             console.error('Erreur', error);
