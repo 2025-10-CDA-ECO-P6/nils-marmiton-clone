@@ -1,0 +1,24 @@
+name: Docker
+
+on:
+  push:
+    branches:
+      - "master"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: |
+          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/marmiton-clone-nw .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/marmiton-clone-nw
+
+      - name: Ping Render's WebHook
+        run: |
+          curl -X GET https://api.render.com/deploy/${{ secrets.RENDER_WEBHOOK_ID }}
