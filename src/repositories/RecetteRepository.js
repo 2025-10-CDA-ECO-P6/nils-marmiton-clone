@@ -10,12 +10,37 @@ class RecetteRepository {
         const countSql = `SELECT COUNT(*) AS totalItems FROM recettes`;
         const totalResult = await this.db.get(countSql);
         const totalItems = totalResult.totalItems;
-        const dataSql = `SELECT * FROM recettes LIMIT ? OFFSET ?`;
+        const dataSql = `
+            SELECT
+                r.*,
+                GROUP_CONCAT(
+                        json_object(
+                                'id', i.id,
+                                'name', i.name,
+                                'quantity', ri.Quantite
+                        )
+                ) AS ingredients
+            FROM recettes r
+                     LEFT JOIN Recettes_Ingredients ri ON r.id = ri.RecetteID
+                     LEFT JOIN ingredients i ON ri.IngredientID = i.id
+            GROUP BY r.id
+            ORDER BY r.id DESC
+                LIMIT ? OFFSET ?;
+        `;
+
         const recettes = await this.db.all(dataSql, [limit, offset])
+
+        console.log('Recettes brutes:', JSON.stringify(recettes[0], null, 2));
+        const recettesWithIngredients = recettes.map(recette => ({
+            ...recette,
+            ingredients: JSON.parse(`[${recette.ingredients}]`)
+
+
+        }));
         const totalPages = Math.ceil(totalItems / limit);
 
         return {
-            data : recettes,
+            data : recettesWithIngredients,
             meta : {
                 totalItems : totalItems,
                 itemsPerPage : limit,
@@ -25,15 +50,15 @@ class RecetteRepository {
         };
     }
 
-    async findById(id) {
-        const sql = `SELECT * FROM recettes WHERE ID=?`
+    async findByDocumentId(id) {
+        const sql = `SELECT * FROM recettes WHERE documentId=?`
         return await  this.db.get(sql, [id]);
     }
 
     async saveOne(data) {
-        const { documentId, titre, temps, difficulte, budget, description } = data;
-        const result = await this.db.run("INSERT INTO recettes (documentId, titre, temps, difficulte, budget, description ) VALUES (?, ?, ?, ?, ?, ?)" ,
-            [documentId, titre, temps, difficulte, budget, description]
+        const { documentId, title, time, difficulty, price, steps } = data;
+        const result = await this.db.run("INSERT INTO recettes (documentId, title, time, difficulty, price, steps ) VALUES (?, ?, ?, ?, ?, ?)" ,
+            [documentId, title, time, difficulty, price, steps]
         );
 
         if (result && result.lastID) {
@@ -51,18 +76,18 @@ class RecetteRepository {
     };
 
     async deleteById(id) {
-        const sql = `DELETE FROM recettes WHERE id=?`;
+        const sql = `DELETE FROM recettes WHERE documentId=?`;
         return await this.db.run(sql, [id])
     }
 
     async updateOne(id, data) {
-        const recetteToUpdate = await this.findById(id);
+        const recetteToUpdate = await this.findByDocumentId(id);
         if (!recetteToUpdate) {
             throw new Error('Recette à mettre a jours non trouvé');
         }
-
+        const internalDbId = recetteToUpdate.id;
         const fieldsToUpdate = {};
-        const allowFields = ['titre', 'temps', 'difficulte', 'budget', 'description'];
+        const allowFields = ['title', 'time', 'difficulty', 'price', 'steps'];
 
         for (const field of allowFields) {
             if (data[field] !== undefined) {
@@ -78,7 +103,7 @@ class RecetteRepository {
             .map(field => `${field} = ?`)
             .join(', ');
 
-        const values = [...Object.values(fieldsToUpdate), id];
+        const values = [...Object.values(fieldsToUpdate), internalDbId];
 
 
         const result = await this.db.run(
@@ -90,7 +115,7 @@ class RecetteRepository {
             throw new Error(`Aucune recette mise à jour avec l'ID ${id}`);
         }
 
-        return await this.findById(id);
+        return await this.findByDocumentId(id);
     }
 }
 
