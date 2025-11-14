@@ -19,7 +19,6 @@ export async function openDb() {
         driver: sqlite3.Database
     });
 
-    console.log('Connecté à la base de données SQLite (promisifiée)');
     await initDatabase(db);
 
     return db;
