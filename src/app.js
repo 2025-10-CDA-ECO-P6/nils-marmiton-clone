@@ -5,13 +5,13 @@ import 'dotenv/config';
 import authToken from "./middleware/auth.js";
 import scrapeRoutes from "./routes/scrapeRoutes.js";
 import ApplicationContext from "./ApplicationContext.js";
+import userRoutes from "./routes/userRoutes.js";
 
 
 const app = express();
 app.use(express.json());
-const port = 3000;
+const port = 1337;
 
-let dbConnection;
 
 async function startServer() {
     try {
@@ -23,8 +23,9 @@ async function startServer() {
         const userService = context.getBean('userService');
         const recipesScrapperService = context.getBean('recipesScrapperService');
 
-        app.use('/api/recettes', recetteRoutes(recetteService));
-        app.use('/api/auth',  authRoutes(userService));
+        app.use('/api/recipes', recetteRoutes(recetteService));
+        app.use('/api/auth/local',  authRoutes(userService));
+        app.use('/api/users', authToken, userRoutes(userService));
         app.use('/private', authToken, scrapeRoutes(recipesScrapperService));
 
         // Démarrage du serveur
