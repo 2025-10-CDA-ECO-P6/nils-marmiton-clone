@@ -1,9 +1,8 @@
 class User {
     constructor(data) {
         this.id = data.id;
-        this.nom = data.nom;
-        this.prenom = data.prenom;
-        this.email = data.email;
+        this.username = data.username
+        this.mail = data.mail;
         this.password = data.password;
     }
 
@@ -20,9 +19,8 @@ class User {
         return {
             "data" : {
                 id : this.id,
-                nom: this.nom,
-                prenom: this.prenom,
-                email: this.email,
+             username: this.username,
+                mail: this.mail,
                 token: token || null
             }
         }
