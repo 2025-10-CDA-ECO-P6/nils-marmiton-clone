@@ -1,5 +1,3 @@
-import bcrypt from 'bcrypt';
-
 class User {
     constructor(data) {
         this.id = data.id;
@@ -9,13 +7,13 @@ class User {
         this.password = data.password;
     }
 
-    async hashPassword() {
+    async hashPassword(hasherService) {
         const salt = 10;
-        this.password = await bcrypt.hash(this.password, salt);
+        this.password = await hasherService.hash(this.password, salt);
     }
 
-    async comparePassword(password) {
-        return bcrypt.compare(password, this.password);
+    async comparePassword(password, hasherService) {
+        return hasherService.compare(password, this.password);
     }
 
     toJson(token) {
