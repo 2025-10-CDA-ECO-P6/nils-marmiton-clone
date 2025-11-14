@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 const authToken = (req, res, next) => {
     //recupere le token depuis le header "Bearer <token>"
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // je recupere // <token>
+    const token = authHeader && authHeader.split(' ')[1];
 
     if(!token) {
         return res.status(401).json({

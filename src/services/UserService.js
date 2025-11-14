@@ -1,10 +1,11 @@
 import jwt from 'jsonwebtoken';
 class UserService {
-    constructor(userRepository, jwtSecret, jwtExpiresIn, User) {
+    constructor(userRepository, jwtSecret, jwtExpiresIn, User, hasherService) {
         this.userRepository = userRepository;
         this.JWT_SECRET = jwtSecret;
         this.JWT_EXPIRES_IN = jwtExpiresIn;
         this.User = User;
+        this.hasherService = hasherService;
     }
 
     async doRegister(userData) {
@@ -18,7 +19,7 @@ class UserService {
             throw new Error('Cet email est deja utilisé');
         }
 
-        await user.hashPassword();
+        await user.hashPassword(this.hasherService);
 
         const data = {
             nom : user.nom,
@@ -43,8 +44,10 @@ class UserService {
         }
 
         const user = new this.User(userData);
+        console.log('Mot de passe fourni (clair) : ', password);
+        console.log('Mot de passe stocké (haché) : ', user.password);
 
-        const isPassWordValid = await user.comparePassword(password);
+        const isPassWordValid = await user.comparePassword(password, this.hasherService);
         if (!isPassWordValid) {
             throw new Error('Email ou mot de pass incorrect');
         }
@@ -59,7 +62,7 @@ class UserService {
         }
 
         const userData = await this.userRepository.findById(userId);
-        if(!user) {
+        if(!userData) {
             throw new Error('Utilisateur non trouvé');
         }
 

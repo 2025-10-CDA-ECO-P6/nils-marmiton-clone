@@ -1,38 +1,39 @@
-import puppeteer from "puppeteer";
 
 class RecipesScrapperService {
-    constructor(recetteRepository, ingredientRepository) {
+    constructor(recetteRepository, ingredientRepository, browserDriver) {
         this.recetteRepository = recetteRepository;
         this.ingredientRepository = ingredientRepository;
+        this.browserDriver = browserDriver;
     }
 
     async scrape() {
         let browser;
         const scrapedResults = [];
         let pageId = 1;
-        try {
-            browser = await puppeteer.launch({
-                headless: true,
-                args: ['--no-sandbox', '--disable-setuid-sandbox']
-            });
-        } catch (error) {
-            console.error('Erreur', error.message);
-        }
 
-        const allUrls = await this.collectAllRecipesUrls(browser);
-        const CONCURRENCY_LIMIT = 5;
-        let results = [];
 
-        for (let i = 0; i < allUrls.length; i += CONCURRENCY_LIMIT) {
-            const batchUrls = allUrls.slice(i, i + CONCURRENCY_LIMIT);
+       try {
+           browser = await this.browserDriver.launchBrowser();
+           const allUrls = await this.collectAllRecipesUrls(browser);
+           const CONCURRENCY_LIMIT = 5;
+           let results = [];
 
-            const batchPromises = batchUrls.map(url => this.scrapeRecipe(browser, url));
-            const batchResults = await Promise.all(batchPromises);
+           for (let i = 0; i < allUrls.length; i += CONCURRENCY_LIMIT) {
+               const batchUrls = allUrls.slice(i, i + CONCURRENCY_LIMIT);
 
-            results.push(...batchResults);
-        }
+               const batchPromises = batchUrls.map(url => this.scrapeRecipe(browser, url));
+               const batchResults = await Promise.all(batchPromises);
 
-        return results;
+               results.push(...batchResults);
+           }
+
+           return results;
+       } catch (error) {
+           console.error('Erreur critique pendant le scraping principal:', error.message);
+           throw error;
+       } finally {
+           await this.browserDriver.closeBrowser();
+       }
     }
 
     async collectAllRecipesUrls(browser, startPage = 1, endPage = 6) {

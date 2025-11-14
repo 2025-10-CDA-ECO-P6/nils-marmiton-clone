@@ -5,8 +5,8 @@ class RecetteService {
         this.Recette = Recette;
     }
 
-    async getAllRecettes() {
-        return await this.recetteRepository.findAll()
+    async getAllRecettes(page, limit) {
+        return await this.recetteRepository.FindAllPaginated(page, limit);
     };
 
     async getRecetteById(recetteId) {
