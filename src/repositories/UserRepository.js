@@ -13,19 +13,19 @@ class UserRepository {
         return userData;
     }
 
-    async findByEmail(email) {
-        const sql = `SELECT * FROM users WHERE email = ?`;
-        const userData =  await this.db.get(sql, [email]);
+    async findBymail(mail) {
+        const sql = `SELECT * FROM users WHERE mail = ?`;
+        const userData =  await this.db.get(sql, [mail]);
         return userData;
     }
 
     async createUser(data) {
-        const {nom, prenom, email, password} = data;
+        const {username, mail, password} = data;
         const sql = `
-            INSERT INTO users (nom, prenom, email, password)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO users (username,  mail, password)
+            VALUES (?, ?, ?)
         `;
-        const result = await this.db.run(sql, [nom, prenom, email, password]);
+        const result = await this.db.run(sql, [username, mail, password]);
 
         return {
             lastID: result.lastID
