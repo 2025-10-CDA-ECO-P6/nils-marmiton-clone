@@ -3,10 +3,6 @@ class UserRepository {
         this.db = dbConnection;
     }
 
-    async findAll() {
-        const sql = `SELECT * FROM users`;
-        return await this.db.all(sql);
-    }
 
     async findById(userId) {
         const sql = `SELECT * FROM users WHERE id = ?`;
