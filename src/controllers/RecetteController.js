@@ -14,23 +14,23 @@ class RecetteController {
         this.router.get('/', this.getRecettes.bind(this));
 
         //  GET api/recettes/:id
-        this.router.get('/:id', this.getRecette.bind(this))
+        this.router.get('/:documentId', this.getRecette.bind(this))
 
         // DELETE api/recette/:id
-        this.router.delete('/:id', this.deleteRecette.bind(this))
+        this.router.delete('/:documentId', this.deleteRecette.bind(this))
 
         // POST /api/recettes
         this.router.post('/', authToken, this.createRecette.bind(this));
 
         // UPDATE /api/recettes/:id
-        this.router.patch('/:id', this.updateRecette.bind(this));
+        this.router.patch('/:documentId', this.updateRecette.bind(this));
 
     }
 
 
     async getRecette(req, res) {
         try {
-            const recette = await this.recetteService.getRecetteById(req.params.id);
+            const recette = await this.recetteService.getRecetteByDocumentId(req.params.documentId);
             res.status(200).json(recette);
         } catch (error) {
             console.error('Erreur', error);
@@ -52,7 +52,7 @@ class RecetteController {
 
     async deleteRecette(req, res) {
         try {
-            const recetteToDelete = req.params.id;
+            const recetteToDelete = req.params.documentId;
             const isDeleted = await this.recetteService.deleteRecette(recetteToDelete);
             if(!isDeleted) {
                 return res.status(404).json({ message: 'Recette non trouvée ou déjà supprimée.' });
@@ -78,7 +78,7 @@ class RecetteController {
 
     async updateRecette(req, res) {
         try {
-            const recette = await this.recetteService.updateRecette(req.params.id , req.body);
+            const recette = await this.recetteService.updateRecette(req.params.documentId , req.body);
             res.status(200).json(recette);
         } catch (error) {
             console.error(req.body);
