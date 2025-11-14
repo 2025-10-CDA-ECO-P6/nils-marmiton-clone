@@ -98,7 +98,7 @@ class RecipesScrapperService {
 
 
                 const allSteps = [];
-                const titre = document.querySelector('.main-title h1')?.innerText;
+                const title = document.querySelector('.main-title h1')?.innerText;
                 const infos = document.querySelectorAll('.recipe-primary__item');
                 const stepsContainer = document.querySelectorAll('.recipe-step-list__container');
 
@@ -119,25 +119,25 @@ class RecipesScrapperService {
                 const ingredients = getIngredients();
 
 
-                let temps, difficulte, budget;
+                let time, difficulty, price;
 
                 if (infos.length < 3) {
                     console.error('Erreur : manque des infos')
                     return {
-                        titre: titre || 'Titre manquant',
+                        title: title || 'Titre manquant',
                         error: 'Données infos incomplètes',
                     };
                 } else {
-                    temps = infos[0].innerText.trim();
-                    difficulte = infos[1].innerText.trim();
-                    budget = infos[2].innerText.trim();
+                    time = infos[0].innerText.trim();
+                    difficulty = infos[1].innerText.trim();
+                    price = infos[2].innerText.trim();
 
                     return {
-                        titre: titre,
-                        temps: temps,
-                        difficulte: difficulte,
-                        budget: budget,
-                        description: JSON.stringify(allSteps),
+                        title: title,
+                        time: time,
+                        difficulty: difficulty,
+                        price: price,
+                        steps: JSON.stringify(allSteps),
                         ingredients: ingredients
                     }
                 }
@@ -158,11 +158,11 @@ class RecipesScrapperService {
     async saveRecipe(recetteData) {
         try {
             const recetteCoreData = {
-                titre: recetteData.titre,
-                temps: recetteData.temps,
-                difficulte: recetteData.difficulte,
-                budget: recetteData.budget,
-                description: recetteData.description
+                title: recetteData.title,
+                time: recetteData.time,
+                difficulty: recetteData.difficulty,
+                price: recetteData.price,
+                steps: recetteData.steps
             };
 
             const newRecette = await this.recetteService.createNewRecette(recetteCoreData);
