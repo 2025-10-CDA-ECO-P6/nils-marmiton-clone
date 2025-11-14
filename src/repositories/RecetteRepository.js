@@ -4,10 +4,6 @@ class RecetteRepository {
     }
     static DEFAULT_LIMIT = 5;
     static DEFAULT_PAGE = 1;
-    async findAll() {
-        const sql = 'SELECT * FROM recettes'
-        return await this.db.all(sql);
-    }
 
     async FindAllPaginated(page = RecetteRepository.DEFAULT_PAGE, limit = RecetteRepository.DEFAULT_LIMIT) {
         const offset = (page -1) * limit;
@@ -35,11 +31,17 @@ class RecetteRepository {
     }
 
     async saveOne(data) {
-        const { titre, temps, difficulte, budget, description } = data;
-        const result = await this.db.run("INSERT INTO recettes (titre, temps, difficulte, budget, description ) VALUES (?, ?, ?, ?, ?)" ,
-            [titre, temps, difficulte, budget, description]
+        const { documentId, titre, temps, difficulte, budget, description } = data;
+        const result = await this.db.run("INSERT INTO recettes (documentId, titre, temps, difficulte, budget, description ) VALUES (?, ?, ?, ?, ?, ?)" ,
+            [documentId, titre, temps, difficulte, budget, description]
         );
-        return result.lastID;
+
+        if (result && result.lastID) {
+            data.id = result.lastID;
+        } else {
+            throw new Error("Échec de l'insertion");
+        }
+        return data;
     }
 
     async linkIngredient(recetteId, ingredientId, quantity) {

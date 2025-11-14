@@ -1,19 +1,16 @@
 
 class RecipesScrapperService {
-    constructor(recetteRepository, ingredientRepository, browserDriver) {
+    constructor(recetteRepository, ingredientRepository, recetteService,  browserDriver) {
         this.recetteRepository = recetteRepository;
         this.ingredientRepository = ingredientRepository;
+        this.recetteService = recetteService;
         this.browserDriver = browserDriver;
     }
 
     async scrape() {
         let browser;
-        const scrapedResults = [];
-        let pageId = 1;
-
-
-       try {
-           browser = await this.browserDriver.launchBrowser();
+        try {
+            browser = await this.browserDriver.launchBrowser();
            const allUrls = await this.collectAllRecipesUrls(browser);
            const CONCURRENCY_LIMIT = 5;
            let results = [];
@@ -168,8 +165,8 @@ class RecipesScrapperService {
                 description: recetteData.description
             };
 
-            const newRecetteId = await this.recetteRepository.saveOne(recetteCoreData);
-
+            const newRecette = await this.recetteService.createNewRecette(recetteCoreData);
+            const newRecetteId = newRecette.id;
             if (!newRecetteId) {
                 throw new Error('Impossible de trouver ID de la nouvelle recete ');
             }

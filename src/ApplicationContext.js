@@ -54,6 +54,7 @@ class ApplicationContext {
             () => new RecipesScrapperService(
                 this.beans.recetteRepository,
                 this.beans.ingredientRepository,
+                this.beans.recetteService,
                 this.beans.browserDriver
             )
         );

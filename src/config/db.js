@@ -32,6 +32,7 @@ export async function initDatabase(dbConnection) {
     await dbConnection.run(`
         CREATE TABLE IF NOT EXISTS recettes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            documentId TEXT UNIQUE NOT NULL,
             titre TEXT NOT NULL,
             temps DECIMAL NOT NULL,
             difficulte INTEGER NOT NULL,

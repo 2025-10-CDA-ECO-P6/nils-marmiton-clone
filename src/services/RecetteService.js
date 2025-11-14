@@ -6,7 +6,16 @@ class RecetteService {
     }
 
     async getAllRecettes(page, limit) {
-        return await this.recetteRepository.FindAllPaginated(page, limit);
+        const { data: recettes, meta } = await this.recetteRepository.FindAllPaginated(page, limit);
+        const publicRecettes = recettes.map(recetteData => {
+            const recetteInstance = new this.Recette(recetteData);
+            return recetteInstance.toJson();
+        });
+
+        return {
+            data : publicRecettes,
+            meta: meta
+        }
     };
 
     async getRecetteById(recetteId) {
@@ -26,6 +35,8 @@ class RecetteService {
 
         const recette = new this.Recette(recetteData)
         const data = {
+            id: recette.id,
+            documentId: recette.documentId,
             titre: recette.titre,
             temps: recette.temps,
             difficulte : recette.difficulte,
