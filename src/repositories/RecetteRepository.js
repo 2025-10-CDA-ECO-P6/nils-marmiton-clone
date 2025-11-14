@@ -2,10 +2,31 @@ class RecetteRepository {
     constructor(dbConnection) {
         this.db = dbConnection;
     }
-
+    static DEFAULT_LIMIT = 5;
+    static DEFAULT_PAGE = 1;
     async findAll() {
         const sql = 'SELECT * FROM recettes'
         return await this.db.all(sql);
+    }
+
+    async FindAllPaginated(page = RecetteRepository.DEFAULT_PAGE, limit = RecetteRepository.DEFAULT_LIMIT) {
+        const offset = (page -1) * limit;
+        const countSql = `SELECT COUNT(*) AS totalItems FROM recettes`;
+        const totalResult = await this.db.get(countSql);
+        const totalItems = totalResult.totalItems;
+        const dataSql = `SELECT * FROM recettes LIMIT ? OFFSET ?`;
+        const recettes = await this.db.all(dataSql, [limit, offset])
+        const totalPages = Math.ceil(totalItems / limit);
+
+        return {
+            data : recettes,
+            meta : {
+                totalItems : totalItems,
+                itemsPerPage : limit,
+                totalPages : totalPages,
+                currentPage : page
+            },
+        };
     }
 
     async findById(id) {
