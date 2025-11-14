@@ -10,11 +10,11 @@ class UserService {
 
     async doRegister(userData) {
         const userPayload = userData;
-        if (!userPayload.nom || !userPayload.prenom || !userPayload.email || !userPayload.password) {
+        if (!userPayload.username || !userPayload.mail || !userPayload.password) {
             throw new Error('Email, nom d\'utilisateur, prénom  et mot de passe sont obligatoires');
         }
         const user = new this.User(userData);
-        const existingMail = await this.userRepository.findByEmail(user.email);
+        const existingMail = await this.userRepository.findBymail(user.mail);
         if(existingMail) {
             throw new Error('Cet email est deja utilisé');
         }
@@ -22,9 +22,8 @@ class UserService {
         await user.hashPassword(this.hasherService);
 
         const data = {
-            nom : user.nom,
-            prenom : user.prenom,
-            email : user.email,
+            username: user.username,
+            mail : user.mail,
             password : user.password
         };
 
@@ -33,12 +32,12 @@ class UserService {
     }
 
     async doLogin(userPayload) {
-        const {email, password} = userPayload;
-        if (!userPayload.email || !userPayload.password) {
+        const {mail, password} = userPayload;
+        if (!userPayload.mail || !userPayload.password) {
             throw new Error('Email et mot de passe sont obligatoires');
         }
 
-        const userData = await this.userRepository.findByEmail(email);
+        const userData = await this.userRepository.findBymail(mail);
         if (!userData) {
             throw new Error('Email ou mot de pass incorrect');
         }
@@ -75,7 +74,7 @@ class UserService {
         return jwt.sign(
             {
                 id: user.id,
-                email: user.email,
+                mail: user.mail,
                 username: user.username
             },
             this.JWT_SECRET,

@@ -18,8 +18,8 @@ class RecetteService {
         }
     };
 
-    async getRecetteById(recetteId) {
-        return await this.recetteRepository.findById(recetteId);
+    async getRecetteByDocumentId(recetteId) {
+        return await this.recetteRepository.findByDocumentId(recetteId);
     }
 
     async deleteRecette(recetteId) {
@@ -29,26 +29,26 @@ class RecetteService {
     async createNewRecette(recettePayload) {
 
         const recetteData = recettePayload.data || recettePayload;
-        if (!recetteData.titre || recetteData.temps === undefined || recetteData.difficulte === undefined || recetteData.budget === undefined) {
-            throw new Error("Le titre, le temps, la difficulté et le budget sont obligatoires pour créer une recette.");
+        if (!recetteData.title || recetteData.time === undefined || recetteData.difficulty === undefined || recetteData.price === undefined) {
+            throw new Error("Le title, le time, la difficulté et le price sont obligatoires pour créer une recette.");
         }
 
         const recette = new this.Recette(recetteData)
         const data = {
             id: recette.id,
             documentId: recette.documentId,
-            titre: recette.titre,
-            temps: recette.temps,
-            difficulte : recette.difficulte,
-            budget: recette.budget,
-            description: recette.description
+            title: recette.title,
+            time: recette.time,
+            difficulty : recette.difficulty,
+            price: recette.price,
+            steps: recette.steps
         }
         return await this.recetteRepository.saveOne(data);
     };
 
     async updateRecette(recetteId, recettePayload) {
         const recetteData = recettePayload.data || recettePayload;
-        const existingRecette = await this.getRecetteById(recetteId);
+        const existingRecette = await this.getRecetteByDocumentId(recetteId);
         if (!existingRecette) {
             throw new Error(`La recette avec l'ID ${recetteId} n'a pas été trouvée.`);
         }
