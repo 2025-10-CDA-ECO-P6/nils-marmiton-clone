@@ -33,11 +33,11 @@ export async function initDatabase(dbConnection) {
         CREATE TABLE IF NOT EXISTS recettes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             documentId TEXT UNIQUE NOT NULL,
-            titre TEXT NOT NULL,
-            temps DECIMAL NOT NULL,
-            difficulte INTEGER NOT NULL,
-            budget INTEGER NOT NULL,
-            description TEXT NOT NULL,
+            title TEXT NOT NULL,
+            time DECIMAL NOT NULL,
+            difficulty INTEGER NOT NULL,
+            price INTEGER NOT NULL,
+            steps TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `);
@@ -45,9 +45,8 @@ export async function initDatabase(dbConnection) {
     await dbConnection.run(`
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nom TEXT NOT NULL,
-            prenom TEXT NOT NULL,
-            email TEXT NOT NULL,
+            username TEXT NOT NULL,
+            mail TEXT NOT NULL,
             password TEXT NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
@@ -56,7 +55,7 @@ export async function initDatabase(dbConnection) {
     await dbConnection.run(`
         CREATE TABLE IF NOT EXISTS ingredients (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nom TEXT NOT NULL UNIQUE
+            name TEXT NOT NULL UNIQUE
         )
     `);
 
