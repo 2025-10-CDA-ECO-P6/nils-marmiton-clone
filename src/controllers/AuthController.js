@@ -32,7 +32,7 @@ class AuthController {
     async login(req, res) {
         try {
             const user = await this.userService.doLogin(req.body);
-            res.json(user);
+            res.status(200).json(user);
         } catch (error) {
             console.error(req.body);
             console.error('Erreur lors de la connexion', error);
