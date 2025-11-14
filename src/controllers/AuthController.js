@@ -14,8 +14,7 @@ class AuthController {
 
         // POST api/auth/login
         this.router.post('/', this.login.bind(this));
-        // GET api/auth/me
-        this.router.get('/me', authToken, this.whoAmI.bind(this));
+
     }
 
     async register(req, res) {
@@ -45,16 +44,7 @@ class AuthController {
 
     }
 
-    async whoAmI(req, res) {
-        try {
-            const user = await this.userService.getCurrentUser(req.user.id);
-            return res.status(200).json(user);
-        } catch (error) {
-            console.error(req.user.id);
-            console.error('Erreur', error);
-            res.status(500).json({error : "Erreur serveur"})
-        }
-    }
+
 
 
     getRouter() {
