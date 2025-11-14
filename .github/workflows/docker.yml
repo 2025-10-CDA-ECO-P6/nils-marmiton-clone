@@ -21,4 +21,4 @@ jobs:
 
       - name: Ping Render's WebHook
         run: |
-          curl -X GET https://api.render.com/deploy/${{ secrets.RENDER_WEBHOOK_ID }}
+          curl -X GET ${{ secrets.RENDER_WEBHOOK_ID }}
