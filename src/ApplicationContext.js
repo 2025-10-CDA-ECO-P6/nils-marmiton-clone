@@ -13,7 +13,7 @@ import Recette from "./models/Recette.js";
 class ApplicationContext {
     constructor() {
         if (ApplicationContext.instance) {
-
+            return ApplicationContext.instance;
         }
         this.beans = {};
         this.initialized = false;
