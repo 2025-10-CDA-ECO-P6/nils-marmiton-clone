@@ -16,7 +16,7 @@ class UserService {
         const user = new this.User(userData);
         const existingMail = await this.userRepository.findBymail(user.mail);
         if(existingMail) {
-            throw new Error('Cet email est deja utilisé');
+            throw new Error('Identifiants invalides');
         }
 
         await user.hashPassword(this.hasherService);
